@@ -1,0 +1,22 @@
+############################################################################
+# TEST 1: VLP64 without ground annotations 
+python src/train.py \
+--dataset KITTI \
+--data_path ./data/ \
+--image_set train \
+--train_dir log/train/ \
+--net squeezeSeg \
+--max_steps 25000 \
+--pretrained_model_path data/SqueezeNet/squeezenet_v1.1.pkl \
+--summary_step 50 \
+--checkpoint_step 100
+
+# Training 
+./scripts/train.sh -image_set train -log_dir ./log
+
+# Evaluation 
+./scripts/eval.sh -image_set val -log_dir ./log
+
+############################################################################
+
+

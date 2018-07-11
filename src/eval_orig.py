@@ -19,7 +19,6 @@ from config import *
 from imdb import kitti
 from utils.util import *
 from nets import *
-# from sklearn.metrics import confusion_matrix
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -30,38 +29,16 @@ tf.app.flags.DEFINE_string('image_set', 'val',
                            """Can be train, trainval, val, or test""")
 tf.app.flags.DEFINE_string('eval_dir', '/tmp/bichen/logs/squeezeSeg/eval',
                             """Directory where to write event logs """)
-tf.app.flags.DEFINE_string('checkpoint_path', '/tmp/bichen/logs/squeezeSeg/train',
+tf.app.flags.DEFINE_string('checkpoint_path', 'log/train',
                             """Path to the training checkpoint.""")
 tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 1,
                              """How often to check if new cpt is saved.""")
-tf.app.flags.DEFINE_boolean('run_once', False,
+tf.app.flags.DEFINE_boolean('run_once', True,
                              """Whether to run eval only once.""")
 tf.app.flags.DEFINE_string('net', 'squeezeSeg',
                            """Neural net architecture.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
 
-# def print_cm(cm, labels, hide_zeroes=False, hide_diagonal=False, hide_threshold=None):
-#     """pretty print for confusion matrixes"""
-#     columnwidth = max([len(x) for x in labels] + [5])  # 5 is value length
-#     empty_cell = " " * columnwidth
-#     # Print header
-#     print("    " + empty_cell, end=" ")
-#     for label in labels:
-#         print("%{0}s".format(columnwidth) % label, end=" ")
-#     print()
-#     # Print rows
-#     for i, label1 in enumerate(labels):
-#         print("    %{0}s".format(columnwidth) % label1, end=" ")
-#         for j in range(len(labels)):
-#             cell = "%{0}.4f".format(columnwidth) % cm[i, j]
-#             if hide_zeroes:
-#                 cell = cell if float(cm[i, j]) != 0 else empty_cell
-#             if hide_diagonal:
-#                 cell = cell if i != j else empty_cell
-#             if hide_threshold:
-#                 cell = cell if cm[i, j] > hide_threshold else empty_cell
-#             print(cell, end=" ")
-#         print()
 
 def eval_once(
     saver, ckpt_path, summary_writer, eval_summary_ops, eval_summary_phs, imdb,
@@ -159,19 +136,11 @@ def eval_once(
         eval_summary_phs['Timing/read']:_t['read'].average_time/mc.BATCH_SIZE,
     }
 
-    if mc.EVAL_ON_ORG:
-        print ('  Accuracy:')
-        classes=['unknown' ,  'car', 'pedestrian'  ,  'cyclist']
-        for i in range(1, 4):
-            print ('    {}:'.format(classes[i]))
-            print ('\tPixel-seg: P: {:.3f}, R: {:.3f}, IoU: {:.3f}'.format(
-                pr[i], re[i], ious[i]))
-
     print ('  Accuracy:')
     for i in range(1, mc.NUM_CLASS):
-      if not mc.EVAL_ON_ORG:
-          print ('    {}:'.format(mc.CLASSES[i]))
-          print ('\tPixel-seg: P: {:.3f}, R: {:.3f}, IoU: {:.3f}'.format(pr[i], re[i], ious[i]))
+      print ('    {}:'.format(mc.CLASSES[i]))
+      print ('\tPixel-seg: P: {:.3f}, R: {:.3f}, IoU: {:.3f}'.format(
+          pr[i], re[i], ious[i]))
       eval_sum_feed_dict[
           eval_summary_phs['Pixel_seg_accuracy/'+mc.CLASSES[i]+'_iou']] = ious[i]
       eval_sum_feed_dict[
@@ -182,20 +151,14 @@ def eval_once(
     eval_summary_str = sess.run(eval_summary_ops, feed_dict=eval_sum_feed_dict)
     for sum_str in eval_summary_str:
       summary_writer.add_summary(sum_str, global_step)
-    # summary_writer.flush()
-    # cm = cm / cm.sum(axis=1)[:, np.newaxis] 
-    # if  mc.EVAL_ON_ORG:
-    #     print_cm(cm, ['unknown' ,  'car', 'pedestrian'  ,  'cyclist'])
-    # else:
-    #     print_cm(cm, mc.CLASSES[i])
+    summary_writer.flush()
 
 def evaluate():
   """Evaluate."""
   assert FLAGS.dataset == 'KITTI', \
       'Currently only supports KITTI dataset'
 
-  # os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
-  os.environ['CUDA_VISIBLE_DEVICES'] = ""
+  os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
 
   with tf.Graph().as_default() as g:
 
@@ -203,8 +166,7 @@ def evaluate():
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg':
-      # mc = kitti_squeezeSeg_config()
-      mc = kitti_squeezeSeg_config_ext()
+      mc = kitti_squeezeSeg_config()
       mc.LOAD_PRETRAINED_MODEL = False
       mc.BATCH_SIZE = 1 # TODO(bichen): fix this hard-coded batch size.
       model = SqueezeSeg(mc)

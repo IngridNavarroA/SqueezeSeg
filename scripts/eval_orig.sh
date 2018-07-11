@@ -3,7 +3,7 @@
 export GPUID=0
 export NET="squeezeSeg"
 export IMAGE_SET="val"
-export LOG_DIR="./log2/"
+export LOG_DIR="./log/"
 
 if [ $# -eq 0 ]
 then
@@ -51,12 +51,12 @@ while test $# -gt 0; do
 done
 
 logdir="$LOG_DIR/"
-traindir="$logdir/train/"
+traindir="$logdirtrain/"
 valdir="$logdir/eval_$IMAGE_SET"
 
 python ./src/eval.py \
   --dataset=KITTI \
-  --data_path=./data/test1_z64_g/ \
+  --data_path=./data/ \
   --image_set=$IMAGE_SET \
   --eval_dir="$valdir" \
   --checkpoint_path="$traindir" \

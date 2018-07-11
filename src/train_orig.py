@@ -36,22 +36,20 @@ tf.app.flags.DEFINE_integer('max_steps', 1000000,
                             """Maximum number of batches to run.""")
 tf.app.flags.DEFINE_string('net', 'squeezeSeg',
                            """Neural net architecture. """)
-tf.app.flags.DEFINE_string('pretrained_model_path', '',
+tf.app.flags.DEFINE_string('pretrained_model_path', '../log/train/model.ckpt-0.data-00000-of-00001',
                            """Path to the pretrained model.""")
 tf.app.flags.DEFINE_integer('summary_step', 50,
                             """Number of steps to save summary.""")
-tf.app.flags.DEFINE_integer('checkpoint_step', 1000,
+tf.app.flags.DEFINE_integer('checkpoint_step', 100,
                             """Number of steps to save summary.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
-tf.app.flags.DEFINE_string('restore', 'y', """Resume training.""")
 
 def train():
   """Train SqueezeSeg model"""
   assert FLAGS.dataset == 'KITTI', \
       'Currently only support KITTI dataset'
 
-  # os.environ['CUDA_VISIBLE_DEVICES'] = ""
-  os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
+  os.environ['CUDA_VISIBLE_DEVICES'] = ""#FLAGS.gpu
 
   with tf.Graph().as_default():
 
@@ -59,8 +57,7 @@ def train():
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg':
-      # mc = kitti_squeezeSeg_config()   # Original training set 
-      mc = kitti_squeezeSeg_config_ext() # Added ground class
+      mc = kitti_squeezeSeg_config()
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg(mc)
 
@@ -109,46 +106,12 @@ def train():
 
           sess.run(model.enqueue_op, feed_dict=feed_dict)
 
+    saver = tf.train.Saver(tf.all_variables())
+    summary_op = tf.summary.merge_all()
+    init = tf.initialize_all_variables()
 
-    # Checkpoint 
-    ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
-    if ckpt == None:
-    	'''Creating a new Checkpoint'''
-      	saver = tf.train.Saver(tf.all_variables(),max_to_keep=None)
-      	summary_op = tf.summary.merge_all()
-      	init = tf.initialize_all_variables()
-      	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-      	sess.run(init)
-      	global_step=0
-    else:
-    	'''Restoring Checkpoint ''' 
-    	var_list=tf.all_variables()
-    	new_var_list=[variable for variable in var_list if "recurrent_crf" not in variable.name and "conv14_prob" not in variable.name]
-     	try:
-     		'''Restoring all variables '''
-     		check_point_path=ckpt.model_checkpoint_path
-     		global_step = int(float(check_point_path.split('/')[-1].split('-')[-1]))
-     		saver = tf.train.Saver(tf.all_variables(),max_to_keep=None)
-      		summary_op = tf.summary.merge_all()
-      		config = tf.ConfigProto(allow_soft_placement=True)
-      		sess = tf.Session(config=config)
-      		saver.restore(sess, check_point_path)
-      	except tf.errors.InvalidArgumentError:
-      		'''Restoring only variables with matching shapes, other variables are randomly initialized'''
-      		print("###########Number of output channels/labels different from checkpoint. Not restoring the Recurrent CRF Layer and conv14 layer###########")
-      		check_point_path=ckpt.model_checkpoint_path    
-      		global_step = int(float(check_point_path.split('/')[-1].split('-')[-1]))    
-      		saver = tf.train.Saver(new_var_list,max_to_keep=None)
-      		summary_op = tf.summary.merge_all()
-      		config=tf.ConfigProto(allow_soft_placement=True)
-      		sess = tf.Session(config=config)
-      		saver.restore(sess, check_point_path)
-      		'''initializing CRF parameters and conv14 layer'''
-      		r_crf_var_list=[variable for variable in var_list if "recurrent_crf" in variable.name or "conv14_prob"  in variable.name]
-      		init_new_vars_op = tf.initialize_variables(r_crf_var_list)
-      		sess.run(init_new_vars_op)
-      		'''Setting up global saver'''
-      		saver = tf.train.Saver(tf.all_variables(),max_to_keep=None)
+    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+    sess.run(init)
 
     summary_writer = tf.summary.FileWriter(FLAGS.train_dir, sess.graph)
 
@@ -248,7 +211,7 @@ def train():
 
 def main(argv=None):  # pylint: disable=unused-argument
   if tf.gfile.Exists(FLAGS.train_dir):
-  	tf.gfile.DeleteRecursively(FLAGS.train_dir)
+    tf.gfile.DeleteRecursively(FLAGS.train_dir)
   tf.gfile.MakeDirs(FLAGS.train_dir)
   train()
 
