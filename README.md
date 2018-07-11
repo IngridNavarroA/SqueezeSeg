@@ -27,7 +27,7 @@ Please refer to our video for a high level introduction of this work: https://yo
 The instructions are tested on Ubuntu 16.04 with python 2.7 and tensorflow 1.0 with GPU support (CUDA 8.0 and cuDNN 5.1). 
 - Clone the SqueezeSeg repository:
     ```Shell
-    $ git clone https://github.com/BichenWuUCB/SqueezeSeg.git
+    $ git clone https://github.com/IngridNavarroA/SqueezeSeg.git
     ```
      We name the root directory as `$SQSG_ROOT`.
 
@@ -39,31 +39,6 @@ The instructions are tested on Ubuntu 16.04 with python 2.7 and tensorflow 1.0 w
     2. Activate the virtual environment
        ```Shell
        $ source env/bin/activate
-       ```
-
-    3. [option] I recommend to use `virtualenvwrapper`
-
-       ```shell
-       $ pip install virtualenvwrapper
-       # configure virtualenvwrapper
-       $ mkdir $HOME/.local/virtualenvs
-       # append contents in `~/.bashrc`
-       $ sudo vim ~/.bashrc
-       # always use pip/distribute
-       export VIRTUALENV_USE_DISTRIBUTE=1
-       # directory to store all virtual environment 
-       export WORKON_HOME=$HOME/.local/virtualenvs
-       if [ -e $HOME/.local/bin/virtualenvwrapper.sh ]; then
-         source $HOME/.local/bin/virtualenvwrapper.sh
-       else if [ -e /usr/local/bin/virtualenvwrapper.sh ]; then
-         source /usr/local/bin/virtualenvwrapper.sh
-       fi
-       export PIP_VIRTUALENV_BASE=$WORKON_HOME
-       export PIP_RESPECT_VIRTUALENV=true
-       # enable virtualenvwrapper
-       $ source ~/.bashrc
-       # create virtual environment with python2.7 and tensorflow 1.0.0
-       $ mkvirtualenv -p /usr/bin/python2.7 python1.0.0
        ```
 
 -   Use pip to install required Python packages:

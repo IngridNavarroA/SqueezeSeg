@@ -24,45 +24,48 @@ from nets import *
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('dataset', 'KITTI',
-                           """Currently only support KITTI dataset.""")
+tf.app.flags.DEFINE_string('dataset', 'KITTI', """Currently only support KITTI dataset.""")
 tf.app.flags.DEFINE_string('data_path', '', """Root directory of data""")
-tf.app.flags.DEFINE_string('image_set', 'train',
-                           """ Can be train, trainval, val, or test""")
+tf.app.flags.DEFINE_string('image_set', 'train', """ Can be train, trainval, val, or test""")
 tf.app.flags.DEFINE_string('train_dir', '/tmp/bichen/logs/squeezeseg/train',
-                            """Directory where to write event logs """
-                            """and checkpoint.""")
-tf.app.flags.DEFINE_integer('max_steps', 1000000,
-                            """Maximum number of batches to run.""")
-tf.app.flags.DEFINE_string('net', 'squeezeSeg',
-                           """Neural net architecture. """)
-tf.app.flags.DEFINE_string('pretrained_model_path', '',
-                           """Path to the pretrained model.""")
-tf.app.flags.DEFINE_integer('summary_step', 50,
-                            """Number of steps to save summary.""")
-tf.app.flags.DEFINE_integer('checkpoint_step', 1000,
-                            """Number of steps to save summary.""")
+                            """Directory where to write event logs and checkpoint.""")
+tf.app.flags.DEFINE_integer('max_steps', 1000000, """Maximum number of batches to run.""")
+tf.app.flags.DEFINE_string('net', 'squeezeSeg', """Neural net architecture. """)
+tf.app.flags.DEFINE_string('pretrained_model_path', '', """Path to the pretrained model.""")
+tf.app.flags.DEFINE_integer('summary_step', 50, """Number of steps to save summary.""")
+tf.app.flags.DEFINE_integer('checkpoint_step', 1000, """Number of steps to save summary.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
-tf.app.flags.DEFINE_string('restore', 'y', """Resume training.""")
+tf.app.flags.DEFINE_string('extended', 'y', """Extended classes.""")
+tf.app.flags.DEFINE_string('restore', 'n', """Start from checkpoint""")
 
 def train():
   """Train SqueezeSeg model"""
   assert FLAGS.dataset == 'KITTI', \
       'Currently only support KITTI dataset'
 
-  # os.environ['CUDA_VISIBLE_DEVICES'] = ""
-  os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
+  if FLAGS.gpu == '0':
+  	os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
+  else:
+  	os.environ['CUDA_VISIBLE_DEVICES'] = "" # Train only with CPU
 
   with tf.Graph().as_default():
-
     assert FLAGS.net == 'squeezeSeg', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
-    if FLAGS.net == 'squeezeSeg':
-      # mc = kitti_squeezeSeg_config()   # Original training set 
-      mc = kitti_squeezeSeg_config_ext() # Added ground class
+    if FLAGS.net == 'squeezeSeg': 	 
+      if FLAGS.extended == 'y':
+      	mc = kitti_squeezeSeg_config_ext() # Added ground class
+      else:
+      	mc = kitti_squeezeSeg_config()   # Original training set
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg(mc)
+    elif FLAGS.net == 'squeezeSeg32': 	 
+      if FLAGS.extended == 'y':
+      	mc = kitti_squeezeSeg32_config_ext() # Added ground class
+      else:
+      	mc = kitti_squeezeSeg32_config()   # Original training set
+      mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
+      model = SqueezeSeg32(mc)
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 
@@ -109,8 +112,7 @@ def train():
 
           sess.run(model.enqueue_op, feed_dict=feed_dict)
 
-
-    # Checkpoint 
+    # Train form checkpoint 
     ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
     if ckpt == None:
     	'''Creating a new Checkpoint'''
@@ -247,9 +249,9 @@ def train():
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if tf.gfile.Exists(FLAGS.train_dir):
+  if tf.gfile.Exists(FLAGS.train_dir) and FLAGS.restore == 'n':
   	tf.gfile.DeleteRecursively(FLAGS.train_dir)
-  tf.gfile.MakeDirs(FLAGS.train_dir)
+  	tf.gfile.MakeDirs(FLAGS.train_dir)
   train()
 
 
