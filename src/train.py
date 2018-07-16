@@ -49,7 +49,7 @@ def train():
   	os.environ['CUDA_VISIBLE_DEVICES'] = "" # Train only with CPU
 
   with tf.Graph().as_default():
-    assert FLAGS.net == 'squeezeSeg', \
+    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg': 	 
@@ -66,6 +66,14 @@ def train():
       	mc = kitti_squeezeSeg32_config()   # Original training set
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg32(mc)
+    else # squeezeSeg16 	 
+      if FLAGS.extended == 'y':
+      	mc = kitti_squeezeSeg16_config_ext() # Added ground class
+      else:
+      	mc = kitti_squeezeSeg16_config()   # Original training set
+      mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
+      model = SqueezeSeg32(mc)
+
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 
@@ -249,9 +257,10 @@ def train():
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if tf.gfile.Exists(FLAGS.train_dir) and FLAGS.restore == 'n':
-  	tf.gfile.DeleteRecursively(FLAGS.train_dir)
-  	tf.gfile.MakeDirs(FLAGS.train_dir)
+  if FLAGS.restore == 'n':
+  	if tf.gfile.Exists(FLAGS.train_dir):
+  		tf.gfile.DeleteRecursively(FLAGS.train_dir)
+	tf.gfile.MakeDirs(FLAGS.train_dir)
   train()
 
 

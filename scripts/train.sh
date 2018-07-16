@@ -6,7 +6,7 @@ export IMAGE_SET="train"
 export LOG_DIR="./log/"
 export STEPS=25000
 export DATA_DIR="./data/"
-export EXT="y"
+export EXT="n"
 export RES="n"
 
 if [ $# -eq 0 ]

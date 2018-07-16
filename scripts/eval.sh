@@ -16,6 +16,7 @@ then
   echo "-h, --help                show brief help"
   echo "-gpu                      gpu id | n (cpu)"
   echo "-image_set                (train|val)"
+  echo "-net                      Network architecture to train"
   echo "-log_dir                  Where to load models and save logs."
   echo "-data_dir                 Where the data to train is."
   echo "-ext                      Train with additional class."
@@ -31,6 +32,7 @@ while test $# -gt 0; do
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-gpu                      gpu id"
+      echo "-net                      Network architecture to train"
       echo "-image_set                (train|val)"
       echo "-log_dir                  Where to load models and save logs."
       echo "-data_dir                 Where the data to train is."
@@ -40,6 +42,11 @@ while test $# -gt 0; do
       ;;
     -gpu)
       export GPUID="$2"
+      shift
+      shift
+      ;;
+    -net)
+      export NET="$2"
       shift
       shift
       ;;
@@ -74,7 +81,7 @@ while test $# -gt 0; do
   esac
 done
 
-logdir="$LOG_DIR/"
+logdir="$LOG_DIR"
 traindir="$logdir/train/"
 valdir="$logdir/eval_$IMAGE_SET"
 
