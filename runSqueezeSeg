@@ -46,7 +46,7 @@ Visualize
 tensorboard --logdir=log2/
 
 # ----------------------------------------------------------------------------------------- #
-# TEST 2: VLP64 with ground annotations 
+# TEST 3: VLP32 with ground annotations 
 python ./src/train.py \
   --dataset=KITTI \
   --pretrained_model_path=./data/SqueezeNet/squeezenet_v1.1.pkl \
@@ -62,10 +62,10 @@ python ./src/train.py \
   --restore=y
   
 Training 
-./scripts/train.sh -net squeezeSeg32 -image_set train -log_dir ./log3 -data_dir ./data/test2_z32_ng -gpu 0 -res n -ext n
+./scripts/train.sh -net squeezeSeg32 -image_set train -log_dir ./log3 -data_dir ./data/test2_z32_ng/ -gpu 0 -res n -ext n
 
 Evaluation 
-./scripts/eval.sh -net squeezeSeg32 -image_set val -log_dir ./log3 -data_dir ./data/test2_z32_g/ -gpu 0 -res n -ext y
+./scripts/eval.sh -net squeezeSeg32 -image_set val -log_dir ./log3 -data_dir ./data/test2_z32_ng/ -gpu 0 -res n -ext n
 
 Visualize
 tensorboard --logdir=log3/

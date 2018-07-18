@@ -1,1 +1,1 @@
-from squeezeSeg import SqueezeSeg, SqueezeSeg32, SqueezeSeg16
+from squeezeSeg import *

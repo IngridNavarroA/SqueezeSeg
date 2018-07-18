@@ -35,7 +35,7 @@ tf.app.flags.DEFINE_string('pretrained_model_path', '', """Path to the pretraine
 tf.app.flags.DEFINE_integer('summary_step', 50, """Number of steps to save summary.""")
 tf.app.flags.DEFINE_integer('checkpoint_step', 1000, """Number of steps to save summary.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
-tf.app.flags.DEFINE_string('extended', 'y', """Extended classes.""")
+tf.app.flags.DEFINE_string('classes', 'red', """Extended classes.""")
 tf.app.flags.DEFINE_string('restore', 'n', """Start from checkpoint""")
 
 def train():
@@ -53,27 +53,37 @@ def train():
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg': 	 
-      if FLAGS.extended == 'y':
+      if FLAGS.classes == 'ext':
       	mc = kitti_squeezeSeg_config_ext() # Added ground class
+      elif FLAGS.classes == 'red':
+      	mc = kitti_squeezeSeg_config_red() # Reduced pedestrian and cyclist to single class
       else:
-      	mc = kitti_squeezeSeg_config()   # Original training set
+        mc = kitti_squeezeSeg_config() # Original training set
+      
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg(mc)
+    
     elif FLAGS.net == 'squeezeSeg32': 	 
-      if FLAGS.extended == 'y':
+      if FLAGS.classes == 'ext':
       	mc = kitti_squeezeSeg32_config_ext() # Added ground class
+      elif FLAGS.classes == 'red':
+        mc = kitti_squeezeSeg32_config_red() # Reduced pedestrian and cyclist to single class
       else:
-      	mc = kitti_squeezeSeg32_config()   # Original training set
+        mc = kitti_squeezeSeg32_config()     # Original training set
+        
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg32(mc)
-    else # squeezeSeg16 	 
-      if FLAGS.extended == 'y':
-      	mc = kitti_squeezeSeg16_config_ext() # Added ground class
+    
+    else: # squeezeSeg16 	  
+      if FLAGS.classes == 'ext':
+      	mc = kitti_squeezeSeg16_config_ext()  # Added ground class
+      elif FLAGS.classes == 'red': 
+      	mc = kitti_squeezeSeg16_config_red()  # Reduced dataset 
       else:
-      	mc = kitti_squeezeSeg16_config()   # Original training set
+        mc = kitti_squeezeSeg16_config()      # Original training set 
+        
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
-      model = SqueezeSeg32(mc)
-
+      model = SqueezeSeg16(mc)
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 

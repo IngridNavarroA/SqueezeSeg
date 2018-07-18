@@ -6,7 +6,7 @@ export IMAGE_SET="train"
 export LOG_DIR="./log/"
 export STEPS=25000
 export DATA_DIR="./data/"
-export EXT="n"
+export CLASSES="ext"
 export RES="n"
 
 if [ $# -eq 0 ]
@@ -21,7 +21,7 @@ then
   echo "-log_dir                  Where to save logs."
   echo "-steps                    Number of training steps."
   echo "-data_dir                 Where the data to train is."
-  echo "-ext                      Train with additional class."
+  echo "-classes                  Choose configuration [orig / ext / red]"
   echo "-res                      Train from checkpoint."
   exit 0
 fi
@@ -39,7 +39,7 @@ while test $# -gt 0; do
       echo "-log_dir                  Where to save logs."
       echo "-steps                    Number of training steps."
       echo "-data_dir                 Where the data to train is."
-      echo "-ext                      Train with additional class."
+      echo "-classes                  Choose configuration [orig / ext / red]"
       echo "-res                      Train from checkpoint."
       exit 0
       ;;
@@ -73,8 +73,8 @@ while test $# -gt 0; do
       shift
       shift
       ;;
-    -ext)
-      export EXT="$2"
+    -classes)
+      export CLASSES="$2"
       shift
       shift
       ;;
@@ -102,5 +102,5 @@ python ./src/train.py \
   --summary_step=50 \
   --checkpoint_step=500 \
   --gpu=$GPUID \
-  --extended=$EXT \
+  --classes=$CLASSES \
   --restore=$RES

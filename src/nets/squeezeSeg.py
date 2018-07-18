@@ -247,7 +247,7 @@ class SqueezeSeg16(ModelSkeleton):
       self.caffemodel_weight = joblib.load(mc.PRETRAINED_MODEL_PATH)
 
     conv1 = self._conv_layer('conv1', self.lidar_input, filters=16, size=3, stride=2, padding='SAME', freeze=False, xavier=True) # Zenith = 32
-    conv1_skip = self._conv_layer('conv1_skip', self.lidar_input, filters=32, size=1, stride=1, padding='SAME', freeze=False, xavier=True)
+    conv1_skip = self._conv_layer('conv1_skip', self.lidar_input, filters=16, size=1, stride=1, padding='SAME', freeze=False, xavier=True)
     pool1 = self._pooling_layer('pool1', conv1, size=3, stride=2, padding='SAME')
 
     fire2 = self._fire_layer('fire2', pool1, s1x1=4, e1x1=16, e3x3=16, freeze=False) # c = zenith / 4

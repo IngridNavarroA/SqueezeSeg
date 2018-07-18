@@ -3,10 +3,12 @@
 export GPUID=0
 export NET="squeezeSeg"
 export IMAGE_SET="val"
-export LOG_DIR="./log/"
+export LOG_DIR="./log/log3"
 export DATA_DIR="./data/"
 export EXT="y"
-export RES="n"
+export RES="y"
+export MAX_STEPS=60000
+export CKPT=500
 
 if [ $# -eq 0 ]
 then
@@ -21,6 +23,8 @@ then
   echo "-data_dir                 Where the data to train is."
   echo "-ext                      Train with additional class."
   echo "-res                      Train from checkpoint."
+  echo "-max_steps                Max number of steps used during training."
+  echo "-ckpt                     Checkpoint step"
   exit 0
 fi
 
@@ -38,6 +42,8 @@ while test $# -gt 0; do
       echo "-data_dir                 Where the data to train is."
       echo "-ext                      Train with additional class."
       echo "-res                      Train from checkpoint."
+      echo "-max_steps                 Max number of steps used during training."
+      echo "-ckpt                     Checkpoint step"
       exit 0
       ;;
     -gpu)
@@ -75,6 +81,16 @@ while test $# -gt 0; do
       shift
       shift
       ;;
+    -max_steps)
+      export MAX_STEPS="$2"
+      shift
+      shift
+      ;;
+    -ckpt)
+      export CKPT="$2"
+      shift
+      shift
+      ;;
     *)
       break
       ;;
@@ -84,14 +100,17 @@ done
 logdir="$LOG_DIR"
 traindir="$logdir/train/"
 valdir="$logdir/eval_$IMAGE_SET"
+filen="checkpoint"
 
-python ./src/eval.py \
-  --dataset=KITTI \
-  --data_path=$DATA_DIR/ \
-  --image_set=$IMAGE_SET \
-  --eval_dir="$valdir" \
-  --checkpoint_path="$traindir" \
-  --net=$NET \
-  --gpu=$GPUID \
-  --extended=$EXT \
-  --restore=$RES
+ python ./src/eval.py \
+   --dataset=KITTI \
+   --data_path=$DATA_DIR/ \
+   --image_set=$IMAGE_SET \
+   --eval_dir="$valdir" \
+   --checkpoint_path="$traindir" \
+   --net=$NET \
+   --gpu=$GPUID \
+   --extended=$EXT \
+   --restore=$RES \
+   --max_steps=$MAX_STEPS \
+   --ckpt_step=$CKPT
