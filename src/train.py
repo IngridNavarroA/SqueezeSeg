@@ -84,6 +84,7 @@ def train():
         
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg16(mc)
+      # model = SqueezeSeg16red(mc)
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 

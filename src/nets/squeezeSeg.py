@@ -328,3 +328,105 @@ class SqueezeSeg16(ModelSkeleton):
     ex3x3 = self._conv_layer(layer_name+'/expand3x3', deconv, filters=e3x3, size=3, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
 
     return tf.concat([ex1x1, ex3x3], 3, name=layer_name+'/concat')
+
+
+# SqueezeSeg modified for VLP16 data
+class SqueezeSeg16red(ModelSkeleton):
+  def __init__(self, mc, gpu_id=0):
+    with tf.device('/gpu:{}'.format(gpu_id)):
+      ModelSkeleton.__init__(self, mc)
+
+      self._add_forward_graph()
+      self._add_output_graph()
+      self._add_loss_graph()
+      self._add_train_graph()
+      self._add_viz_graph()
+      self._add_summary_ops()
+
+  def _add_forward_graph(self):
+    """NN architecture."""
+    mc = self.mc
+    if mc.LOAD_PRETRAINED_MODEL:
+      assert tf.gfile.Exists(mc.PRETRAINED_MODEL_PATH), \
+          'Cannot find pretrained model at the given path:' \
+          '  {}'.format(mc.PRETRAINED_MODEL_PATH)
+      self.caffemodel_weight = joblib.load(mc.PRETRAINED_MODEL_PATH)
+
+    conv1 = self._conv_layer('conv1', self.lidar_input, filters=16, size=3, stride=2, padding='SAME', freeze=False, xavier=True) # Zenith = 32
+    conv1_skip = self._conv_layer('conv1_skip', self.lidar_input, filters=16, size=1, stride=1, padding='SAME', freeze=False, xavier=True)
+    pool1 = self._pooling_layer('pool1', conv1, size=3, stride=2, padding='SAME')
+
+    fire2 = self._fire_layer('fire2', pool1, s1x1=4, e1x1=16, e3x3=16, freeze=False) # c = zenith / 4
+    pool2 = self._pooling_layer('pool2', fire2, size=3, stride=2, padding='SAME')
+
+    fire3 = self._fire_layer('fire3', pool2, s1x1=8, e1x1=32, e3x3=32, freeze=False)
+    pool3 = self._pooling_layer('pool3', fire3, size=3, stride=2, padding='SAME')
+
+    fire4 = self._fire_layer('fire4', pool3, s1x1=12, e1x1=48, e3x3=48, freeze=False) # c / 2 and c * 2
+    fire5 = self._fire_layer('fire5', fire4, s1x1=16, e1x1=64, e3x3=64, freeze=False)
+
+    # Deconvolation
+    fire6 = self._fire_deconv('fire_deconv6', fire5, s1x1=16, e1x1=32, e3x3=32, factors=[1, 2], stddev=0.1)
+    fire6_fuse = tf.add(fire6, fire3, name='fure6_fuse')
+
+    fire7 = self._fire_deconv('fire_deconv7', fire6_fuse, s1x1=16, e1x1=16, e3x3=16, factors=[1, 2], stddev=0.1)
+    fire7_fuse = tf.add(fire7, fire2, name='fire7_fuse')
+
+    fire8 = self._fire_deconv('fire_deconv8', fire7_fuse, s1x1=4, e1x1=8, e3x3=8, factors=[1, 2], stddev=0.1)
+    fire8_fuse = tf.add(fire8, conv1, name='fire8_fuse')
+
+    fire9 = self._fire_deconv('fire_deconv9', fire8_fuse, s1x1=4, e1x1=8, e3x3=8, factors=[1, 2], stddev=0.1)
+    fire9_fuse = tf.add(fire9, conv1_skip, name='fire9_fuse')
+
+    drop10 = tf.nn.dropout(fire9_fuse, self.keep_prob, name='drop10')
+
+    conv11 = self._conv_layer('conv11_prob', drop10, filters=mc.NUM_CLASS, size=3, stride=1, padding='SAME', relu=False, stddev=0.1)
+
+    bilateral_filter_weights = self._bilateral_filter_layer('bilateral_filter', self.lidar_input[:, :, :, :3], # x, y, z
+        thetas=[mc.BILATERAL_THETA_A, mc.BILATERAL_THETA_R], sizes=[mc.LCN_HEIGHT, mc.LCN_WIDTH], stride=1)
+
+    self.output_prob = self._recurrent_crf_layer('recurrent_crf', conv11, bilateral_filter_weights, 
+        sizes=[mc.LCN_HEIGHT, mc.LCN_WIDTH], num_iterations=mc.RCRF_ITER, padding='SAME')
+
+  def _fire_layer(self, layer_name, inputs, s1x1, e1x1, e3x3, stddev=0.001, freeze=False):
+    """Fire layer constructor.
+    Args:
+      layer_name: layer name
+      inputs: input tensor
+      s1x1: number of 1x1 filters in squeeze layer.
+      e1x1: number of 1x1 filters in expand layer.
+      e3x3: number of 3x3 filters in expand layer.
+      freeze: if true, do not train parameters in this layer.
+    Returns:
+      fire layer operation.
+    """
+    sq1x1 = self._conv_layer(layer_name+'/squeeze1x1', inputs, filters=s1x1, size=1, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
+    ex1x1 = self._conv_layer(layer_name+'/expand1x1', sq1x1, filters=e1x1, size=1, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
+    ex3x3 = self._conv_layer(layer_name+'/expand3x3', sq1x1, filters=e3x3, size=3, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
+
+    return tf.concat([ex1x1, ex3x3], 3, name=layer_name+'/concat')
+
+  def _fire_deconv(self, layer_name, inputs, s1x1, e1x1, e3x3, factors=[1, 2], freeze=False, stddev=0.001):
+    """Fire deconvolution layer constructor.
+    Args:
+      layer_name: layer name
+      inputs: input tensor
+      s1x1: number of 1x1 filters in squeeze layer.
+      e1x1: number of 1x1 filters in expand layer.
+      e3x3: number of 3x3 filters in expand layer.
+      factors: spatial upsampling factors.
+      freeze: if true, do not train parameters in this layer.
+    Returns:
+      fire layer operation.
+    """
+    assert len(factors) == 2,'factors should be an array of size 2'
+
+    ksize_h = factors[0] * 2 - factors[0] % 2
+    ksize_w = factors[1] * 2 - factors[1] % 2
+
+    sq1x1 = self._conv_layer(layer_name+'/squeeze1x1', inputs, filters=s1x1, size=1, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
+    deconv = self._deconv_layer(layer_name+'/deconv', sq1x1, filters=s1x1, size=[ksize_h, ksize_w], stride=factors, padding='SAME', init='bilinear')
+    ex1x1 = self._conv_layer(layer_name+'/expand1x1', deconv, filters=e1x1, size=1, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
+    ex3x3 = self._conv_layer(layer_name+'/expand3x3', deconv, filters=e3x3, size=3, stride=1, padding='SAME', freeze=freeze, stddev=stddev)
+
+    return tf.concat([ex1x1, ex3x3], 3, name=layer_name+'/concat')
