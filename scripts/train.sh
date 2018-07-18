@@ -4,7 +4,7 @@ export GPUID=0
 export NET="squeezeSeg"
 export IMAGE_SET="train"
 export LOG_DIR="./log/"
-export STEPS=25000
+export MAX_STEPS=60000
 export DATA_DIR="./data/"
 export CLASSES="ext"
 export RES="n"
@@ -63,8 +63,8 @@ while test $# -gt 0; do
       shift
       shift
       ;;
-    -steps)
-      export STEPS="$2"
+    -max_steps)
+      export MAX_STEPS="$2"
       shift
       shift
       ;;
@@ -98,7 +98,7 @@ python ./src/train.py \
   --image_set=$IMAGE_SET \
   --train_dir="$logdir/train" \
   --net=$NET \
-  --max_steps=$STEPS \
+  --max_steps=$MAX_STEPS \
   --summary_step=50 \
   --checkpoint_step=500 \
   --gpu=$GPUID \

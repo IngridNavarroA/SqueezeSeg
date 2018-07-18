@@ -205,8 +205,8 @@ def evaluate():
         
       mc.LOAD_PRETRAINED_MODEL = False
       mc.BATCH_SIZE = 1 # TODO(bichen): fix this hard-coded batch size.
+      # model = SqueezeSeg16red(mc)
       model = SqueezeSeg16(mc)
-      # model = SqueezeSeg16(mc)
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 

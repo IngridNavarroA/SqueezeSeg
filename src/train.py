@@ -52,14 +52,14 @@ def train():
     assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
+    
     if FLAGS.net == 'squeezeSeg': 	 
       if FLAGS.classes == 'ext':
       	mc = kitti_squeezeSeg_config_ext() # Added ground class
       elif FLAGS.classes == 'red':
       	mc = kitti_squeezeSeg_config_red() # Reduced pedestrian and cyclist to single class
       else:
-        mc = kitti_squeezeSeg_config() # Original training set
-      
+        mc = kitti_squeezeSeg_config() # Original training set  
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg(mc)
     
@@ -70,7 +70,6 @@ def train():
         mc = kitti_squeezeSeg32_config_red() # Reduced pedestrian and cyclist to single class
       else:
         mc = kitti_squeezeSeg32_config()     # Original training set
-        
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       model = SqueezeSeg32(mc)
     
@@ -78,13 +77,15 @@ def train():
       if FLAGS.classes == 'ext':
       	mc = kitti_squeezeSeg16_config_ext()  # Added ground class
       elif FLAGS.classes == 'red': 
-      	mc = kitti_squeezeSeg16_config_red()  # Reduced dataset 
+      	mc = kitti_squeezeSeg16_config_red()  # Reduced dataset
       else:
         mc = kitti_squeezeSeg16_config()      # Original training set 
-        
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
-      model = SqueezeSeg16(mc)
-      # model = SqueezeSeg16red(mc)
+      
+      # model = SqueezeSeg16red(mc) # fire modules reducidos
+      model = SqueezeSeg16(mc) # fire modules originales
+
+      
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 
