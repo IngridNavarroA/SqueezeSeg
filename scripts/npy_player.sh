@@ -40,4 +40,4 @@ done
 bash ./scripts/quickstart.sh -rviz_cfg ./rviz/npy.rviz
 
 python ./src/nodes/npy_node.py \
-  --dataset_path=$DATA_DIR
+  --datasetPath=$DATA_DIR

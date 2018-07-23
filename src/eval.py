@@ -33,11 +33,11 @@ tf.app.flags.DEFINE_integer('eval_interval_secs', 10 * 1, """How often to check 
 tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run eval only once.""")
 tf.app.flags.DEFINE_string('net', 'squeezeSeg', """Neural net architecture.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
-tf.app.flags.DEFINE_string('restore', False, """Start from checkpoint""")
+tf.app.flags.DEFINE_string('restore', 0, """Start from checkpoint""")
 tf.app.flags.DEFINE_string('max_steps', 25000, """Max steps used in training""")
 tf.app.flags.DEFINE_string('ckpt_step', 500, """Checkpoint step""")
 tf.app.flags.DEFINE_string('classes', 'red', """Extended classes.""")
-tf.app.flags.DEFINE_string('CRF', True, """Using CRF""")
+tf.app.flags.DEFINE_string('CRF', 1, """Using CRF""")
 
 def eval_once(saver, ckpt_path, summary_writer, eval_summary_ops, eval_summary_phs, imdb, model):
   with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
@@ -247,7 +247,7 @@ def evaluate():
       time.sleep(FLAGS.eval_interval_secs)
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if tf.gfile.Exists(FLAGS.eval_dir) and FLAGS.restore == 'n':
+  if tf.gfile.Exists(FLAGS.eval_dir) and not FLAGS.restore:
     tf.gfile.DeleteRecursively(FLAGS.eval_dir)
     tf.gfile.MakeDirs(FLAGS.eval_dir)
   evaluate()

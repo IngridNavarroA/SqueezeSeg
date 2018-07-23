@@ -6,10 +6,10 @@ export IMAGE_SET="val"
 export LOG_DIR="./log/"
 export DATA_DIR="./data/"
 export CLASSES="ng"
-export RES="False"
+export RES=0
 export TEST=1
 export STEPS=60000
-export CRF="False"
+export CRF=0
 export CKPT=500
 
 if [ $# -eq 0 ]
@@ -92,28 +92,28 @@ then
    LOG_DIR="./log/log16_NG_CRF"
    DATA_DIR="./data/ng_vlp16"
    CLASSES="ng"
-   CRF="True"
+   CRF=1
 elif [ $TEST -eq 2 ]
 then 
    NET="squeezeSeg16"
    LOG_DIR="./log/log16_G_CRF"
    DATA_DIR="./data/g_vlp16"
    CLASSES="ext"
-   CRF="True"
+   CRF=1
 elif [ $TEST -eq 3 ]
 then
    NET="squeezeSeg16x"
    LOG_DIR="./log/log16_NG_NOCRF"
    DATA_DIR="./data/ng_vlp16"
    CLASSES="ng"
-   CRF="False"
+   CRF=0
 elif [ $TEST -eq 4 ]
 then
    NET="squeezeSeg16x"
    LOG_DIR="./log/log16_G_NOCRF"
    DATA_DIR="./data/g_vlp16"
    CLASSES="ext"
-   CRF="False"
+   CRF=0
 fi
 
 logdir="$LOG_DIR"
