@@ -33,12 +33,11 @@ tf.app.flags.DEFINE_integer('eval_interval_secs', 10 * 1, """How often to check 
 tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run eval only once.""")
 tf.app.flags.DEFINE_string('net', 'squeezeSeg', """Neural net architecture.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
-tf.app.flags.DEFINE_string('extended', 'y', """Extended classes.""")
-tf.app.flags.DEFINE_string('restore', 'n', """Start from checkpoint""")
-
+tf.app.flags.DEFINE_string('restore', False, """Start from checkpoint""")
 tf.app.flags.DEFINE_string('max_steps', 25000, """Max steps used in training""")
 tf.app.flags.DEFINE_string('ckpt_step', 500, """Checkpoint step""")
 tf.app.flags.DEFINE_string('classes', 'red', """Extended classes.""")
+tf.app.flags.DEFINE_string('CRF', True, """Using CRF""")
 
 def eval_once(saver, ckpt_path, summary_writer, eval_summary_ops, eval_summary_phs, imdb, model):
   with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
@@ -174,8 +173,6 @@ def evaluate():
     if FLAGS.net == 'squeezeSeg':    
       if FLAGS.classes == 'ext':
         mc = kitti_squeezeSeg_config_ext() # Added ground class
-      elif FLAGS.classes == 'red':
-        mc = kitti_squeezeSeg_config_red() # Reduced pedestrian and cyclist to single class
       else:
         mc = kitti_squeezeSeg_config() # Original training set
       
@@ -186,8 +183,6 @@ def evaluate():
     elif FLAGS.net == 'squeezeSeg32':    
       if FLAGS.classes == 'ext':
         mc = kitti_squeezeSeg32_config_ext() # Added ground class
-      elif FLAGS.classes == 'red':
-        mc = kitti_squeezeSeg32_config_red() # Reduced pedestrian and cyclist to single class
       else:
         mc = kitti_squeezeSeg32_config()     # Original training set
         
@@ -198,15 +193,16 @@ def evaluate():
     else: # squeezeSeg16    
       if FLAGS.classes == 'ext':
         mc = kitti_squeezeSeg16_config_ext()  # Added ground class
-      elif FLAGS.classes == 'red': 
-        mc = kitti_squeezeSeg16_config_red()  # Reduced dataset 
       else:
         mc = kitti_squeezeSeg16_config()      # Original training set 
         
       mc.LOAD_PRETRAINED_MODEL = False
       mc.BATCH_SIZE = 1 # TODO(bichen): fix this hard-coded batch size.
-      # model = SqueezeSeg16red(mc)
-      model = SqueezeSeg16(mc)
+
+      if FLAGS.CRF:  # Using conditional random fields (CRF)
+        model = SqueezeSeg16(mc)
+      else:          # Disable CRF
+        model = SqueezeSeg16x(mc)
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 

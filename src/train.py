@@ -36,7 +36,8 @@ tf.app.flags.DEFINE_integer('summary_step', 50, """Number of steps to save summa
 tf.app.flags.DEFINE_integer('checkpoint_step', 1000, """Number of steps to save summary.""")
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
 tf.app.flags.DEFINE_string('classes', 'red', """Extended classes.""")
-tf.app.flags.DEFINE_string('restore', 'n', """Start from checkpoint""")
+tf.app.flags.DEFINE_string('restore', False, """Start from checkpoint""")
+tf.app.flags.DEFINE_string('CRF', True, """Using CRF""")
 
 def train():
   """Train SqueezeSeg model"""
@@ -52,7 +53,6 @@ def train():
     assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
-    
     if FLAGS.net == 'squeezeSeg': 	 
       if FLAGS.classes == 'ext':
       	mc = kitti_squeezeSeg_config_ext() # Added ground class
@@ -80,12 +80,14 @@ def train():
       	mc = kitti_squeezeSeg16_config_red()  # Reduced dataset
       else:
         mc = kitti_squeezeSeg16_config()      # Original training set 
+      
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       
-      # model = SqueezeSeg16red(mc) # fire modules reducidos
-      model = SqueezeSeg16(mc) # fire modules originales
+      if FLAGS.CRF:  # Using conditional random fields (CRF)
+        model = SqueezeSeg16(mc)
+      else:          # Disable CRF
+        model = SqueezeSeg16x(mc)
 
-      
 
     imdb = kitti(FLAGS.image_set, FLAGS.data_path, mc)
 
@@ -269,12 +271,12 @@ def train():
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if FLAGS.restore == 'n':
+  if FLAGS.restore == False:
   	if tf.gfile.Exists(FLAGS.train_dir):
   		tf.gfile.DeleteRecursively(FLAGS.train_dir)
-	tf.gfile.MakeDirs(FLAGS.train_dir)
+	
+  tf.gfile.MakeDirs(FLAGS.train_dir)
   train()
-
 
 if __name__ == '__main__':
   tf.app.run()

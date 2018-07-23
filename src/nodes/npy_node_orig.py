@@ -194,9 +194,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # start training_set_node
-    node = TrainingSetNode(dataset_path=args.dataset_path,
-                           pub_rate=args.pub_rate,
-                           pub_feature_map_topic=args.pub_feature_map_topic,
-                           pub_label_map_topic=args.pub_label_map_topic)
+    while True:
+        node = TrainingSetNode(dataset_path=args.dataset_path,
+                               pub_rate=args.pub_rate,
+                               pub_feature_map_topic=args.pub_feature_map_topic,
+                               pub_label_map_topic=args.pub_label_map_topic)
 
-    rospy.logwarn('finished.')
+        rospy.logwarn('finished.')

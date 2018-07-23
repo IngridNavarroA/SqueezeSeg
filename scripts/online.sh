@@ -23,6 +23,6 @@ while test $# -gt 0; do
   esac
 done
 
-bash ./scripts/quickstart.sh
+bash ./scripts/quickstart.sh -rviz_cfg ./rviz/npy.rviz
 
 python ./src/online.py --sub_topic "$SUB_TOPIC"

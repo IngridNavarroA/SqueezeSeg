@@ -1,5 +1,4 @@
 # Author: Bichen Wu (bichen@berkeley.edu) 02/20/2017
-
 """SqueezeSeg model"""
 
 from __future__ import absolute_import
@@ -19,7 +18,6 @@ class SqueezeSeg(ModelSkeleton):
   def __init__(self, mc, gpu_id=0):
     with tf.device('/gpu:{}'.format(gpu_id)):
       ModelSkeleton.__init__(self, mc)
-
       self._add_forward_graph()
       self._add_output_graph()
       self._add_loss_graph()
@@ -329,9 +327,8 @@ class SqueezeSeg16(ModelSkeleton):
 
     return tf.concat([ex1x1, ex3x3], 3, name=layer_name+'/concat')
 
-
-# SqueezeSeg modified for VLP16 data
-class SqueezeSeg16red(ModelSkeleton):
+# SqueezeSeg with no CRF
+class SqueezeSeg16x(ModelSkeleton):
   def __init__(self, mc, gpu_id=0):
     with tf.device('/gpu:{}'.format(gpu_id)):
       ModelSkeleton.__init__(self, mc)
@@ -357,36 +354,34 @@ class SqueezeSeg16red(ModelSkeleton):
     pool1 = self._pooling_layer('pool1', conv1, size=3, stride=2, padding='SAME')
 
     fire2 = self._fire_layer('fire2', pool1, s1x1=4, e1x1=16, e3x3=16, freeze=False) # c = zenith / 4
-    pool2 = self._pooling_layer('pool2', fire2, size=3, stride=2, padding='SAME')
-
-    fire3 = self._fire_layer('fire3', pool2, s1x1=8, e1x1=32, e3x3=32, freeze=False)
+    fire3 = self._fire_layer('fire3', fire2, s1x1=4, e1x1=16, e3x3=16, freeze=False)
     pool3 = self._pooling_layer('pool3', fire3, size=3, stride=2, padding='SAME')
 
-    fire4 = self._fire_layer('fire4', pool3, s1x1=12, e1x1=48, e3x3=48, freeze=False) # c / 2 and c * 2
-    fire5 = self._fire_layer('fire5', fire4, s1x1=16, e1x1=64, e3x3=64, freeze=False)
+    fire4 = self._fire_layer('fire4', pool3, s1x1=8, e1x1=32, e3x3=32, freeze=False)
+    fire5 = self._fire_layer('fire5', fire4, s1x1=8, e1x1=32, e3x3=32, freeze=False)
+    pool5 = self._pooling_layer('pool5', fire5, size=3, stride=2, padding='SAME')
+
+    fire6 = self._fire_layer('fire6', pool5, s1x1=12, e1x1=48, e3x3=48, freeze=False) # c / 2 and c * 2
+    fire7 = self._fire_layer('fire7', fire6, s1x1=12, e1x1=48, e3x3=48, freeze=False)
+    fire8 = self._fire_layer('fire8', fire7, s1x1=16, e1x1=64, e3x3=64, freeze=False)
+    fire9 = self._fire_layer('fire9', fire8, s1x1=16, e1x1=64, e3x3=64, freeze=False)
 
     # Deconvolation
-    fire6 = self._fire_deconv('fire_deconv6', fire5, s1x1=16, e1x1=32, e3x3=32, factors=[1, 2], stddev=0.1)
-    fire6_fuse = tf.add(fire6, fire3, name='fure6_fuse')
+    fire10 = self._fire_deconv('fire_deconv10', fire9, s1x1=16, e1x1=32, e3x3=32, factors=[1, 2], stddev=0.1)
+    fire10_fuse = tf.add(fire10, fire5, name='fure10_fuse')
 
-    fire7 = self._fire_deconv('fire_deconv7', fire6_fuse, s1x1=16, e1x1=16, e3x3=16, factors=[1, 2], stddev=0.1)
-    fire7_fuse = tf.add(fire7, fire2, name='fire7_fuse')
+    fire11 = self._fire_deconv('fire_deconv11', fire10_fuse, s1x1=16, e1x1=16, e3x3=16, factors=[1, 2], stddev=0.1)
+    fire11_fuse = tf.add(fire11, fire3, name='fire11_fuse')
 
-    fire8 = self._fire_deconv('fire_deconv8', fire7_fuse, s1x1=4, e1x1=8, e3x3=8, factors=[1, 2], stddev=0.1)
-    fire8_fuse = tf.add(fire8, conv1, name='fire8_fuse')
+    fire12 = self._fire_deconv('fire_deconv12', fire11_fuse, s1x1=4, e1x1=8, e3x3=8, factors=[1, 2], stddev=0.1)
+    fire12_fuse = tf.add(fire12, conv1, name='fire12_fuse')
 
-    fire9 = self._fire_deconv('fire_deconv9', fire8_fuse, s1x1=4, e1x1=8, e3x3=8, factors=[1, 2], stddev=0.1)
-    fire9_fuse = tf.add(fire9, conv1_skip, name='fire9_fuse')
+    fire13 = self._fire_deconv('fire_deconv13', fire12_fuse, s1x1=4, e1x1=8, e3x3=8, factors=[1, 2], stddev=0.1)
+    fire13_fuse = tf.add(fire13, conv1_skip, name='fire13_fuse')
 
-    drop10 = tf.nn.dropout(fire9_fuse, self.keep_prob, name='drop10')
+    drop13 = tf.nn.dropout(fire13_fuse, self.keep_prob, name='drop13')
 
-    conv11 = self._conv_layer('conv11_prob', drop10, filters=mc.NUM_CLASS, size=3, stride=1, padding='SAME', relu=False, stddev=0.1)
-
-    bilateral_filter_weights = self._bilateral_filter_layer('bilateral_filter', self.lidar_input[:, :, :, :3], # x, y, z
-        thetas=[mc.BILATERAL_THETA_A, mc.BILATERAL_THETA_R], sizes=[mc.LCN_HEIGHT, mc.LCN_WIDTH], stride=1)
-
-    self.output_prob = self._recurrent_crf_layer('recurrent_crf', conv11, bilateral_filter_weights, 
-        sizes=[mc.LCN_HEIGHT, mc.LCN_WIDTH], num_iterations=mc.RCRF_ITER, padding='SAME')
+    self.output_prob = self._conv_layer('conv14_prob', drop13, filters=mc.NUM_CLASS, size=3, stride=1, padding='SAME', relu=False, stddev=0.1)
 
   def _fire_layer(self, layer_name, inputs, s1x1, e1x1, e3x3, stddev=0.001, freeze=False):
     """Fire layer constructor.
