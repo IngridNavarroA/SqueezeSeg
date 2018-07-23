@@ -37,7 +37,7 @@ while test $# -gt 0; do
 done
 
 #bash ./scripts/killall.sh
-bash ./scripts/quickstart.sh -rviz_cfg ./rviz/npy.rviz
+bash ./scripts/quickstart.sh -rviz_cfg ./rviz/default.rviz
 
 python ./src/nodes/npy_node.py \
   --datasetPath=$DATA_DIR

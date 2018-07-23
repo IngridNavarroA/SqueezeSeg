@@ -50,7 +50,7 @@ def train():
   	os.environ['CUDA_VISIBLE_DEVICES'] = "" # Train only with CPU
 
   with tf.Graph().as_default():
-    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
+    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16' or FLAGS.net == 'squeezeSeg16x', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg': 	 
@@ -77,7 +77,7 @@ def train():
       
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       
-      if FLAGS.CRF:  # Using conditional random fields (CRF)
+      if FLAGS.CRF == '1':  # Using conditional random fields (CRF)
         model = SqueezeSeg16(mc)
       else:          # Disable CRF
         model = SqueezeSeg16x(mc)
@@ -265,7 +265,7 @@ def train():
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if not FLAGS.restore:
+  if FLAGS.restore == '0':
   	if tf.gfile.Exists(FLAGS.train_dir):
   		tf.gfile.DeleteRecursively(FLAGS.train_dir)
 	

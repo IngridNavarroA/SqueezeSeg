@@ -167,7 +167,7 @@ def evaluate():
 
   with tf.Graph().as_default() as g:
 
-    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
+    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16' or FLAGS.net == 'squeezeSeg16x', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg':    
@@ -199,7 +199,7 @@ def evaluate():
       mc.LOAD_PRETRAINED_MODEL = False
       mc.BATCH_SIZE = 1 # TODO(bichen): fix this hard-coded batch size.
 
-      if FLAGS.CRF:  # Using conditional random fields (CRF)
+      if FLAGS.CRF == '1':  # Using conditional random fields (CRF)
         model = SqueezeSeg16(mc)
       else:          # Disable CRF
         model = SqueezeSeg16x(mc)
@@ -247,7 +247,7 @@ def evaluate():
       time.sleep(FLAGS.eval_interval_secs)
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if tf.gfile.Exists(FLAGS.eval_dir) and not FLAGS.restore:
+  if tf.gfile.Exists(FLAGS.eval_dir) and FLAGS.restore == '0':
     tf.gfile.DeleteRecursively(FLAGS.eval_dir)
     tf.gfile.MakeDirs(FLAGS.eval_dir)
   evaluate()

@@ -42,7 +42,7 @@ if __name__ == '__main__':
                         default='/squeeze_seg/label_map')
     args = parser.parse_args()
 
-    rospy.init_node('segment_node')
+    rospy.init_node('velodyne')
     node = SegmentNode(sub_topic=args.sub_topic,
                        pub_topic=args.pub_topic,
                        pub_feature_map_topic=args.pub_feature_map_topic,
