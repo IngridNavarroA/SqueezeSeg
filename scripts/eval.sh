@@ -50,17 +50,12 @@ while test $# -gt 0; do
       shift
       shift
       ;;
-    -ext)
-      export EXT="$2"
-      shift
-      shift
-      ;;
-    -res)
+    -restore)
       export RES="$2"
       shift
       shift
       ;;
-    -max_steps)
+    -steps)
       export MAX_STEPS="$2"
       shift
       shift
