@@ -39,5 +39,5 @@ done
 #bash ./scripts/killall.sh
 bash ./scripts/quickstart.sh -rviz_cfg ./rviz/default.rviz
 
-python ./src/nodes/npy_node.py \
-  --datasetPath=$DATA_DIR
+python ./src/ros/npy_node.py \
+  --inpath=$DATA_DIR
