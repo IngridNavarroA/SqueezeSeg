@@ -37,7 +37,7 @@ tf.app.flags.DEFINE_integer('checkpoint_step', 1000, """Number of steps to save 
 tf.app.flags.DEFINE_string('gpu', '0', """gpu id.""")
 tf.app.flags.DEFINE_string('classes', 'red', """Extended classes.""")
 tf.app.flags.DEFINE_string('restore', 0, """Start from checkpoint""")
-tf.app.flags.DEFINE_string('CRF', 1, """Using CRF""")
+tf.app.flags.DEFINE_string('crf', 1, """Using CRF""")
 
 def train():
   """Train SqueezeSeg model"""
@@ -50,7 +50,7 @@ def train():
   	os.environ['CUDA_VISIBLE_DEVICES'] = "" # Train only with CPU
 
   with tf.Graph().as_default():
-    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16' or FLAGS.net == 'squeezeSeg16x', \
+    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg': 	 
@@ -67,9 +67,13 @@ def train():
       else:
         mc = kitti_squeezeSeg32_config()     # Original training set
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
-      model = SqueezeSeg32(mc)
+
+      if FLAGS.crf == '1':      # Using conditional random fields (CRF)
+      	model = SqueezeSeg32(mc)
+      else:   					# Disable CRF
+      	model = SqueezeSeg32x(mc)
     
-    else: # squeezeSeg16 	  
+    elif FLAGS.net == 'squeezeSeg16':
       if FLAGS.classes == 'ext':
       	mc = kitti_squeezeSeg16_config_ext()  # Added ground class
       else:
@@ -77,7 +81,7 @@ def train():
       
       mc.PRETRAINED_MODEL_PATH = FLAGS.pretrained_model_path
       
-      if FLAGS.CRF == '1':  # Using conditional random fields (CRF)
+      if FLAGS.crf == '1':  # Using conditional random fields (CRF)
         model = SqueezeSeg16(mc)
       else:          # Disable CRF
         model = SqueezeSeg16x(mc)

@@ -83,28 +83,56 @@ if [ $TEST -eq 1 ]
 then
    NET="squeezeSeg16"
    LOG_DIR="./log/log16_NG_CRF"
-   DATA_DIR="./data/ng_vlp16/"
+   DATA_DIR="./data/ng_vlp16"
    CLASSES="ng"
    CRF=1
 elif [ $TEST -eq 2 ]
 then 
    NET="squeezeSeg16"
    LOG_DIR="./log/log16_G_CRF"
-   DATA_DIR="./data/g_vlp16/"
+   DATA_DIR="./data/g_vlp16"
    CLASSES="ext"
    CRF=1
 elif [ $TEST -eq 3 ]
 then
-   NET="squeezeSeg16x"
+   NET="squeezeSeg16"
    LOG_DIR="./log/log16_NG_NOCRF"
-   DATA_DIR="./data/ng_vlp16/"
+   DATA_DIR="./data/ng_vlp16"
    CLASSES="ng"
    CRF=0
 elif [ $TEST -eq 4 ]
 then
-   NET="squeezeSeg16x"
+   NET="squeezeSeg16"
    LOG_DIR="./log/log16_G_NOCRF"
-   DATA_DIR="./data/g_vlp16/"
+   DATA_DIR="./data/g_vlp16"
+   CLASSES="ext"
+   CRF=0
+elif [ $TEST -eq 5 ]
+then
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_NG_CRF"
+   DATA_DIR="./data/ng_vlp32"
+   CLASSES="ng"
+   CRF=1
+elif [ $TEST -eq 6 ]
+then 
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_G_CRF"
+   DATA_DIR="./data/g_vlp32"
+   CLASSES="ext"
+   CRF=1
+elif [ $TEST -eq 7 ]
+then
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_NG_NOCRF"
+   DATA_DIR="./data/ng_vlp32"
+   CLASSES="ng"
+   CRF=0
+elif [ $TEST -eq 8 ]
+then
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_G_NOCRF"
+   DATA_DIR="./data/g_vlp32"
    CLASSES="ext"
    CRF=0
 fi
@@ -123,5 +151,5 @@ python ./src/train.py \
    --restore=$RES \
    --train_dir="$logdir/train" \
    --summary_step=50 \
-   --checkpoint_step=500
-   
+   --checkpoint_step=500 \
+   --crf=$CRF

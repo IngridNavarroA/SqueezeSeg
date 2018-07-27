@@ -37,7 +37,7 @@ tf.app.flags.DEFINE_string('restore', 0, """Start from checkpoint""")
 tf.app.flags.DEFINE_string('max_steps', 25000, """Max steps used in training""")
 tf.app.flags.DEFINE_string('ckpt_step', 500, """Checkpoint step""")
 tf.app.flags.DEFINE_string('classes', 'red', """Extended classes.""")
-tf.app.flags.DEFINE_string('CRF', 1, """Using CRF""")
+tf.app.flags.DEFINE_string('crf', 1, """Using CRF""")
 
 def eval_once(saver, ckpt_path, summary_writer, eval_summary_ops, eval_summary_phs, imdb, model):
   with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
@@ -167,7 +167,7 @@ def evaluate():
 
   with tf.Graph().as_default() as g:
 
-    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16' or FLAGS.net == 'squeezeSeg16x', \
+    assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
         'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
     if FLAGS.net == 'squeezeSeg':    
@@ -188,9 +188,13 @@ def evaluate():
         
       mc.LOAD_PRETRAINED_MODEL = False
       mc.BATCH_SIZE = 1 # TODO(bichen): fix this hard-coded batch size.
-      model = SqueezeSeg32(mc)
+      
+      if FLAGS.crf == '1':
+      	model = SqueezeSeg32(mc)
+      else:
+      	model = SqueezeSeg32x(mc)
     
-    else: # squeezeSeg16    
+    elif FLAGS.net == 'squeezeSeg16':
       if FLAGS.classes == 'ext':
         mc = kitti_squeezeSeg16_config_ext()  # Added ground class
       else:
@@ -199,7 +203,7 @@ def evaluate():
       mc.LOAD_PRETRAINED_MODEL = False
       mc.BATCH_SIZE = 1 # TODO(bichen): fix this hard-coded batch size.
 
-      if FLAGS.CRF == '1':  # Using conditional random fields (CRF)
+      if FLAGS.crf == '1':  # Using conditional random fields (CRF)
         model = SqueezeSeg16(mc)
       else:          # Disable CRF
         model = SqueezeSeg16x(mc)

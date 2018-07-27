@@ -80,6 +80,10 @@ done
 # Test 2 - VLP 16, CRF, classes: unknown, car, pedestrian, cyclist and ground
 # Test 3 - VLP 16, no CRF, classes: unknown, car, pedestrian and cyclist 
 # Test 4 - VLP 16, no CRF, classes: unknown, car, pedestrian, cyclist and ground
+# Test 5 - VLP 32, CRF, classes: unknown, car, pedestrian and cyclist
+# Test 6 - VLP 32, CRF, classes: unknown, car, pedestrian, cyclist and ground
+# Test 7 - VLP 32, no CRF, classes: unknown, car, pedestrian and cyclist 
+# Test 8 - VLP 32, no CRF, classes: unknown, car, pedestrian, cyclist and ground
 
 if [ $TEST -eq 1 ]
 then
@@ -97,19 +101,48 @@ then
    CRF=1
 elif [ $TEST -eq 3 ]
 then
-   NET="squeezeSeg16x"
+   NET="squeezeSeg16"
    LOG_DIR="./log/log16_NG_NOCRF"
    DATA_DIR="./data/ng_vlp16"
    CLASSES="ng"
    CRF=0
 elif [ $TEST -eq 4 ]
 then
-   NET="squeezeSeg16x"
+   NET="squeezeSeg16"
    LOG_DIR="./log/log16_G_NOCRF"
    DATA_DIR="./data/g_vlp16"
    CLASSES="ext"
    CRF=0
+elif [ $TEST -eq 5 ]
+then
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_NG_CRF"
+   DATA_DIR="./data/ng_vlp32"
+   CLASSES="ng"
+   CRF=1
+elif [ $TEST -eq 6 ]
+then 
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_G_CRF"
+   DATA_DIR="./data/g_vlp32"
+   CLASSES="ext"
+   CRF=1
+elif [ $TEST -eq 7 ]
+then
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_NG_NOCRF"
+   DATA_DIR="./data/ng_vlp32"
+   CLASSES="ng"
+   CRF=0
+elif [ $TEST -eq 8 ]
+then
+   NET="squeezeSeg32"
+   LOG_DIR="./log/log32_G_NOCRF"
+   DATA_DIR="./data/g_vlp32"
+   CLASSES="ext"
+   CRF=0
 fi
+
 
 logdir="$LOG_DIR"
 traindir="$logdir/train/"
@@ -127,4 +160,5 @@ python ./src/eval.py \
    --classes=$CLASSES \
    --restore=$RES \
    --max_steps=$STEPS \
-   --ckpt_step=$CKPT
+   --ckpt_step=$CKPT \
+   --crf=$CRF 

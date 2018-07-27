@@ -97,43 +97,44 @@ class VisualizeNode(object):
         # Tensorflow
       	os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
       	with tf.Graph().as_default():
-      		assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
-      		'Selected neural net architecture not supported: {}'.format(FLAGS.net)
 
-      		if FLAGS.net == 'squeezeSeg':
-      			if FLAGS.classes == 'ext':
-      				mc = kitti_squeezeSeg_config_ext() # Added ground class
-      			else:
-      				mc = kitti_squeezeSeg_config() # Original training set	
+			assert FLAGS.net == 'squeezeSeg' or FLAGS.net == 'squeezeSeg32' or FLAGS.net == 'squeezeSeg16', \
+        'Selected neural net architecture not supported: {}'.format(FLAGS.net)
+			
+			if FLAGS.net == 'squeezeSeg':
+				if FLAGS.classes == 'ext':
+					mc = kitti_squeezeSeg_config_ext() # Added ground class
+				else:
+					mc = kitti_squeezeSeg_config() # Original training set	
 
-      			mc.LOAD_PRETRAINED_MODEL = False
+				mc.LOAD_PRETRAINED_MODEL = False
       			mc.BATCH_SIZE = 1 
-      			model = SqueezeSeg(mc)		
+				model = SqueezeSeg(mc)		
 
-      		elif FLAGS.net == 'squeezeSeg32':
-      			if FLAGS.classes == 'ext':
-      				mc = kitti_squeezeSeg32_config_ext() # Added ground class
-      			else:
-      				mc = kitti_squeezeSeg32_config() # Original training set	
+			elif FLAGS.net == 'squeezeSeg32':
+				if FLAGS.classes == 'ext':
+					mc = kitti_squeezeSeg32_config_ext() # Added ground class
+				else:
+					mc = kitti_squeezeSeg32_config() # Original training set	
 
-      			if FLAGS.CRF == '1':
+				if FLAGS.CRF == '1':
       				model = SqueezeSeg32(mc)
       			else:
       				model = SqueezeSeg32x(mc)
 
-      		elif FLAGS.net == 'squeezeSeg16':
-      			if FLAGS.classes == 'ext':
-      				mc = kitti_squeezeSeg16_config_ext()  # Added ground class
-      			else:
-      				mc = kitti_squeezeSeg16_config()      # Original training set 
+			elif FLAGS.net == 'squeezeSeg16':
+				if FLAGS.classes == 'ext':
+        			mc = kitti_squeezeSeg16_config_ext()  # Added ground class
+     			else:
+					mc = kitti_squeezeSeg16_config()      # Original training set 
+        
+					mc.LOAD_PRETRAINED_MODEL = False
+					mc.BATCH_SIZE = 1 
 
-      			mc.LOAD_PRETRAINED_MODEL = False
-      			mc.BATCH_SIZE = 1 
-      			
-      			if FLAGS.CRF == '1':  # Using conditional random fields (CRF)
-      				model = SqueezeSeg16(mc)
-      			else:          # Disable CRF
-      				model = SqueezeSeg16x(mc)
+			    if FLAGS.CRF == '1':  # Using conditional random fields (CRF)
+					model = SqueezeSeg16(mc)
+			  	else:          # Disable CRF
+					model = SqueezeSeg16x(mc)
 
       		saver = tf.train.Saver(model.model_params)
     		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
