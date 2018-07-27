@@ -74,10 +74,6 @@ done
 # Test 2 - VLP 16, CRF, classes: unknown, car, pedestrian, cyclist and ground
 # Test 3 - VLP 16, no CRF, classes: unknown, car, pedestrian and cyclist 
 # Test 4 - VLP 16, no CRF, classes: unknown, car, pedestrian, cyclist and ground
-# Test 5 - VLP 32, CRF, classes: unknown, car, pedestrian and cyclist
-# Test 6 - VLP 32, CRF, classes: unknown, car, pedestrian, cyclist and ground
-# Test 7 - VLP 32, no CRF, classes: unknown, car, pedestrian and cyclist 
-# Test 8 - VLP 32, no CRF, classes: unknown, car, pedestrian, cyclist and ground
 
 if [ $TEST -eq 1 ]
 then

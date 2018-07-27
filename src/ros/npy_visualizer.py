@@ -80,16 +80,16 @@ class VisualizeNode(object):
     def __init__(self, FLAGS):
        	
        	# ROS
-       	self.publisherPointCloud   = rospy.Publisher(FLAGS.point_cloud, PointCloud2, queue_size=1)
-       	self.publisherIntensityMap = rospy.Publisher(FLAGS.intensity_map, ImageMsg, queue_size=1)
-       	self.publisherRangeMap     = rospy.Publisher(FLAGS.range_map, ImageMsg, queue_size=1)
-       	self.publisherLabelMap     = rospy.Publisher(FLAGS.label_map, ImageMsg, queue_size=1)
+       	self.publisherPointCloud   = rospy.Publisher(FLAGS.topic_pcl, PointCloud2, queue_size=1)
+       	self.publisherIntensityMap = rospy.Publisher(FLAGS.topic_intensity, ImageMsg, queue_size=1)
+       	self.publisherRangeMap     = rospy.Publisher(FLAGS.topic_range, ImageMsg, queue_size=1)
+       	self.publisherLabelMap     = rospy.Publisher(FLAGS.topic_label, ImageMsg, queue_size=1)
 
         # Initialize ROS node
         rospy.init_node('npy_node', anonymous=True)
         rospy.loginfo("npy_node started.")
         rospy.loginfo("Publishing pointclouds from %s in '%s'+'%s'+'%s' topics at %d(hz)...", 
-        	FLAGS.input_path, FLAGS.intensity_map, FLAGS.label_map, FLAGS.point_cloud, FLAGS.rate)
+        	FLAGS.input_path, FLAGS.topic_intensity, FLAGS.topic_label, FLAGS.topic_pcl, FLAGS.rate)
 
         rate     = rospy.Rate(FLAGS.rate)
         counter  = 0

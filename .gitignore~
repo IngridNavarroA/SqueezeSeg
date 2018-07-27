@@ -3,4 +3,3 @@ train_dir.txt
 data/*
 env/*
 logs/*
-log/*
