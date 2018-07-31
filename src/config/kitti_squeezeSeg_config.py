@@ -197,7 +197,8 @@ def kitti_squeezeSeg32_config_ext():
   mc.CLASSES            = ['unknown', 'car', 'pedestrian', 'cyclist', 'ground']
   mc.NUM_CLASS          = len(mc.CLASSES)
   mc.CLS_2_ID           = dict(zip(mc.CLASSES, range(len(mc.CLASSES))))
-  mc.CLS_LOSS_WEIGHT    = np.array([1/15.0, 1.0,  10.0, 10.0, 1/10.0])
+  #mc.CLS_LOSS_WEIGHT    = np.array([1/15.0, 1.0,  10.0, 10.0, 1/10.0])
+  mc.CLS_LOSS_WEIGHT    = np.array([0.00399712, 1.0,  0.68579656, 0.68579656, 0.01329])
   mc.CLS_COLOR_MAP      = np.array([[ 0.00,  0.00,  0.00],
                                     [ 0.12,  0.56,  0.37],
                                     [ 0.66,  0.55,  0.71],
@@ -210,13 +211,14 @@ def kitti_squeezeSeg32_config_ext():
 
   mc.LCN_HEIGHT         = 3
   mc.LCN_WIDTH          = 5
-  mc.RCRF_ITER          = 3
+  #mc.RCRF_ITER         = 3
+  mc.RCRF_ITER          = 5
 
   # Not sure if I need to change this 
   mc.BI_FILTER_COEF     = 0.1
-  mc.BILATERAL_THETA_A  = np.array([.9,   .9,   .6,  .6,  .9])
-  mc.BILATERAL_THETA_R  = np.array([.015, .015, .01, .01, .015])
-  mc.ANG_THETA_A        = np.array([.9,   .9,   .6,  .6,  .9])
+  mc.BILATERAL_THETA_A  = np.array([0.9,   0.9,  0.6, 0.6, 0.9])
+  mc.BILATERAL_THETA_R  = np.array([0.015, 0.015, 0.01, 0.01, 0.015])
+  mc.ANG_THETA_A        = np.array([0.9,   0.9,   0.6, 0.6,  0.9])
   mc.ANG_FILTER_COEF    = 0.02
 
   mc.CLS_LOSS_COEF      = 15.0
@@ -231,8 +233,10 @@ def kitti_squeezeSeg32_config_ext():
   mc.RANDOM_FLIPPING    = True
 
   # x, y, z, intensity, distance
-  mc.INPUT_MEAN         = np.array([[[10.88, 0.23, -1.04, 0.21, 12.12]]])
-  mc.INPUT_STD          = np.array([[[11.47, 6.91,  0.86, 0.16, 12.32]]])
+  # mc.INPUT_MEAN  = np.array([[[10.88, 0.23, -1.04, 0.21, 12.12]]])
+  mc.INPUT_MEAN    = np.array([[[7.11174452147, 0.0943776729418, -0.500243253951, 0.110507476635,7.70754909688]]])
+  # mc.INPUT_STD   = np.array([[[11.47, 6.91,  0.86, 0.16, 12.32]]])
+  mc.INPUT_STD          = np.array([[[10.9252722964, 4.8862697957, 0.775360202555, 0.166859600962,11.6589714541]]])
   
   mc.num_of_input_channels=5
   mc.use_focal_loss=False

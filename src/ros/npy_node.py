@@ -106,7 +106,7 @@ class VisualizeNode(object):
         label   = npyFile[:, :,  5] # label
        
         label3D = np.zeros((label.shape[0], label.shape[1], 3))
-        label3D[np.where(label==0)] = [1., 1., 1.]
+        label3D[np.where(label==0)] = [1., 0.6, 1.]
         label3D[np.where(label==1)] = [1., 0., 0.]
         label3D[np.where(label==2)] = [0., 1., 0.]
         label3D[np.where(label==3)] = [0., 1., 1.]
@@ -124,10 +124,10 @@ class VisualizeNode(object):
         labelpf = np.zeros((label.shape))
 
         label[np.where(label == 0)] = 0
-        label[np.where(label == 1)] = 150
-        label[np.where(label == 2)] = 200
-        label[np.where(label == 3)] = 50
-        label[np.where(label == 4)] = 120
+        label[np.where(label == 1)] = 0.4
+        label[np.where(label == 2)] = 0.3
+        label[np.where(label == 3)] = 0.2
+        label[np.where(label == 4)] = 0.1
 
         # Point cloud shape (6, 32768)
         pc = np.stack((x, y, z, i, r, label)) 

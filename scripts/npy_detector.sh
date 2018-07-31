@@ -1,12 +1,12 @@
 #!/bin/bash
 
 export CKPT="./data/SqueezeSeg/model.ckpt-23000"
-export INPATH="./data/test/ng_vlp64/*"
+export INPATH="./data/test/g_vlp64/*"
 export NET="squeezeSeg"
 export CLASSES="ng"
 export GPUID=0
 export RATE=10
-export CRF=0
+export CRF=1
 export TEST=9 # DEFAULT test 
 
 if [ $# -eq 0 ]
@@ -114,7 +114,7 @@ then
    INPATH="./data/test/g_vlp32/*"
    CLASSES="ext"
    CRF=1
-   CKPT="./data/SqueezeSeg/model.ckpt-23000"
+   CKPT="./data/SqueezeSeg/model.ckpt-79000"
 elif [ $TEST -eq 7 ]
 then
    NET="squeezeSeg32"
@@ -125,10 +125,10 @@ then
 elif [ $TEST -eq 8 ]
 then
    NET="squeezeSeg32"
-   INPATH="./data/test/ng_vlp32/*"
+   INPATH="./data/test/g_vlp32/*"
    CLASSES="ext"
    CRF=0
-   CKPT="./data/SqueezeSeg/model.ckpt-23000"
+   CKPT="./data/SqueezeSeg/model.ckpt-71000"
 fi
 
 # bash ./scripts/killall.sh
@@ -138,9 +138,9 @@ python ./src/visualize.py \
 	--checkpoint=$CKPT \
 	--input_path=$INPATH \
 	--gpu=$GPUID \
-    --rate=$RATE \
-    --net=$NET \
-    --classes=$CLASSES \
-    --crf=$CRF \
+  --rate=$RATE \
+  --net=$NET \
+  --classes=$CLASSES \
+  --crf=$CRF \
     
 

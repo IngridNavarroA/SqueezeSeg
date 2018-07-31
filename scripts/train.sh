@@ -8,7 +8,7 @@ export DATA_DIR="./data/"
 export CLASSES="ng"
 export RES=0
 export TEST=1
-export STEPS=60000
+export STEPS=100000
 export CRF=0
 
 if [ $# -eq 0 ]
